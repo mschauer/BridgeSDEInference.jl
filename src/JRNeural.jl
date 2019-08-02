@@ -66,9 +66,9 @@ end
 
 function b(t, x, P::JRNeuralDiffusion{T}) where T
     ℝ{6}(x[4], x[5], x[6],
-    P.A*P.a*(μx(t, P) + sigm(x[2] - x[3], P) - 2P.a*x[4] - P.a*P.a*x[1]),
-    P.A*P.a*(μy(t, P) + P.C2*sigm(P.C1*x[1], P) - 2P.a*x[5] - P.a*P.a*x[2]),
-    P.B*P.b*(μz(t, P) + P.C4*sigm(P.C3*x[1], P) - 2P.b*x[6] - P.b*P.b*x[3]))
+    P.A*P.a*(μx(t, P) + sigm(x[2] - x[3], P)) - 2P.a*x[4] - P.a*P.a*x[1],
+    P.A*P.a*(μy(t, P) + P.C2*sigm(P.C1*x[1], P)) - 2P.a*x[5] - P.a*P.a*x[2],
+    P.B*P.b*(μz(t, P) + P.C4*sigm(P.C3*x[1], P)) - 2P.b*x[6] - P.b*P.b*x[3])
 end
 
 function σ(t, x, P::JRNeuralDiffusion{T}) where T
@@ -125,7 +125,7 @@ end
 """
     d1sigm(x, P::JRNeuralDiffusionAux{T, S1, S2})
 
-derivative sigmoid function
+derivative of sigmoid function
 """
 function d1sigm(x, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
     P.νmax*r*exp(r*(v0 - x))/(1 + exp(r*(v0 - x)))^2
@@ -135,10 +135,11 @@ function B(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
     @SMatrix [0.0  0.0  0.0  1.0  0.0  0.0;
               0.0  0.0  0.0  0.0  1.0  0.0;
               0.0  0.0  0.0  0.0  0.0  1.0;
-              -P.a*P.a*P.a*P.A*d1sigm(P.v[2] - P.v[3], P)  -P.A*P.a d1sigm(P.v[2] - P.v[3], P)   -2P.a  0.0  0.0;
+              -P.a*P.a  P.A*P.a*d1sigm(P.v[2] - P.v[3], P)  -P.A*P.a*d1sigm(P.v[2] - P.v[3], P)   -2P.a  0.0  0.0;
               P.A*P.a*P.C1*P.C2*d1sigm(P.C1*P.v[1], P)  -P.a*P.a  0.0  0.0  -2P.a  0.0;
               P.B*P.b*P.C3*P.C4*d1sigm(P.C3*P.v[1], P)  0.0  -P.b*P.b  0.0  0.0  -2P.b]
 end
+
 
 function β(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
     ℝ{6}(0.0, 0.0, 0.0,

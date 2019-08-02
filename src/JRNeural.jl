@@ -42,16 +42,16 @@ struct JRNeuralDiffusion{T} <: ContinuousTimeProcess{ℝ{6, T}}
 end
 
 # in the statistical paper they set μ's to be constant and not function of time.
-function μx(t, ::JRNeuralDiffusion{T}) where T
-    μx
+function μx(t, P::JRNeuralDiffusion{T}) where T
+    P.μx
 end
 
-function μy(t, ::JRNeuralDiffusion{T}) where T
-    μy
+function μy(t, P::JRNeuralDiffusion{T}) where T
+    P.μy
 end
 
-function μz(t, ::JRNeuralDiffusion{T}) where T
-    μz
+function μz(t, P::JRNeuralDiffusion{T}) where T
+    P.μz
 end
 
 """
@@ -66,9 +66,9 @@ end
 
 function b(t, x, P::JRNeuralDiffusion{T}) where T
     ℝ{6}(x[4], x[5], x[6],
-    P.A*P.a*(μx(t) + sigm(x[2] - x[3], P) - 2P.a*x[4] - P.a*P.a*x[1]),
-    P.A*P.a*(μy(t) + P.C2*sigm(P.C1*x[1], P) - 2P.a*x[5] - P.a*P.a*x[2]),
-    P.B*P.b*(μz(t) + P.C4*sigm(P.C3*x[1], P) - 2P.b*x[6] - P.b*P.b*x[3]))
+    P.A*P.a*(μx(t, P) + sigm(x[2] - x[3], P) - 2P.a*x[4] - P.a*P.a*x[1]),
+    P.A*P.a*(μy(t, P) + P.C2*sigm(P.C1*x[1], P) - 2P.a*x[5] - P.a*P.a*x[2]),
+    P.B*P.b*(μz(t, P) + P.C4*sigm(P.C3*x[1], P) - 2P.b*x[6] - P.b*P.b*x[3]))
 end
 
 function σ(t, x, P::JRNeuralDiffusion{T}) where T
@@ -78,7 +78,7 @@ end
 constdiff(::JRNeuralDiffusion) = true
 clone(::JRNeuralDiffusion, θ) = JRNeuralDiffusion(θ...)
 params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
-    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σx, P.σy, P.σz]
+    P.v0, P.r, P.μx, P.μy, P.μ_z, P.σx, P.σy, P.σz]
 
 """
     JRNeuralDiffusionaAux{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
@@ -97,6 +97,9 @@ struct JRNeuralDiffusionAux{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
     νmax::R
     v0::R
     r::R
+    μx::R
+    μy::R
+    μz::R
     σx::R
     σy::R
     σz::R
@@ -106,9 +109,9 @@ struct JRNeuralDiffusionAux{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
     T::Float64
     # default generator
     function JRNeuralDiffusionAux(A::R, a::R, B::R, b::R, C1::R, C2::R, C3::R, C4::R,
-                        νmax::R, v0::R ,r::R, σx::R, σy::R, σz::R, t::Float64, u::S1,
-                        T::Float64, v::S2) where {R, S1, S2}
-        new{R, S1, S2}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, σx, σy, σz, t, u, T, v)
+                        νmax::R, v0::R , r::R, μx::R, μy::R, μz::R, σx::R,
+                         σy::R, σz::R, t::Float64, u::S1, T::Float64, v::S2) where {R, S1, S2}
+        new{R, S1, S2}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σx, σy, σz, t, u, T, v)
     end
 
     # generator given assumptions paper

@@ -24,7 +24,7 @@ T = 200.0
 tt = 0.0:dt:T
 
 Random.seed!(4)
-XX, _ = simulateSegment(0.0, x0, P, tt)
+XX, _ = simulateSegment(ℝ{3}(0.0, 0.0, 0.0), x0, P, tt)
 #weird values
 
 XX.yy

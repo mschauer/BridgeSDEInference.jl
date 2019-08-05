@@ -71,8 +71,14 @@ function b(t, x, P::JRNeuralDiffusion{T}) where T
     P.B*P.b*(μz(t, P) + P.C4*sigm(P.C3*x[1], P)) - 2P.b*x[6] - P.b*P.b*x[3])
 end
 
+#6X3 matrix
 function σ(t, x, P::JRNeuralDiffusion{T}) where T
-    ℝ{6}(0.0, 0.0, 0.0, P.σx, P.σy, P.σz)
+    @SMatrix    [0.0  0.0  0.0;
+                0.0  0.0  0.0;
+                0.0  0.0  0.0;
+                P.σx  0.0  0.0;
+                0.0  P.σy  0.0;
+                0.0  0.0  P.σz;]
 end
 
 constdiff(::JRNeuralDiffusion) = true
@@ -149,7 +155,12 @@ function β(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
 end
 
 function σ(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
-    ℝ{6}(0.0, 0.0, 0.0, P.σx, P.σy, P.σz)
+    @SMatrix    [0.0  0.0  0.0;
+                0.0  0.0  0.0;
+                0.0  0.0  0.0;
+                P.σx  0.0  0.0;
+                0.0  P.σy  0.0;
+                0.0  0.0  P.σz;]
 end
 
 

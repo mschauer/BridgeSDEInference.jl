@@ -29,12 +29,12 @@ struct JRNeuralDiffusion{T} <: ContinuousTimeProcess{ℝ{6, T}}
     σx::T
     σy::T
     σz::T
-    # default generator
+    # default constructor
     function JRNeuralDiffusion(A::T, a::T, B::T, b::T, C1::T,  C2::T,  C3::T,  C4::T,
             νmax::T, v0::T ,r::T, μx::T, μy::T, μz::T, σx::T, σy::T, σz::T) where T
         new{T}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σx, σy, σz)
     end
-    # generator given assumption statistical paper
+    # constructor given assumption statistical paper
     function JRNeuralDiffusion(A::T, a::T, B::T, b::T, C::T,
             νmax::T, v0::T ,r::T, μx::T, μy::T, μz::T, σx::T, σy::T, σz::T) where T
         new{T}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, μx, μy, μz, σx, σy, σz)
@@ -87,11 +87,11 @@ params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.ν
     P.v0, P.r, P.μx, P.μy, P.μ_z, P.σx, P.σy, P.σz]
 
 """
-    JRNeuralDiffusionaAux{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
+    JRNeuralDiffusionaAux1{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
 
 structure for the auxiliary process (defined as linearized process in the final point)
 """
-struct JRNeuralDiffusionAux{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
+struct JRNeuralDiffusionAux1{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
     A::R
     a::R
     B::R
@@ -114,14 +114,14 @@ struct JRNeuralDiffusionAux{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
     v::S2
     T::Float64
     # default generator
-    function JRNeuralDiffusionAux(A::R, a::R, B::R, b::R, C1::R, C2::R, C3::R, C4::R,
+    function JRNeuralDiffusionAux1(A::R, a::R, B::R, b::R, C1::R, C2::R, C3::R, C4::R,
                         νmax::R, v0::R , r::R, μx::R, μy::R, μz::R, σx::R,
                          σy::R, σz::R, t::Float64, u::S1, T::Float64, v::S2) where {R, S1, S2}
         new{R, S1, S2}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σx, σy, σz, t, u, T, v)
     end
 
     # generator given assumptions paper
-    function JRNeuralDiffusionAux(A::R, a::R, B::R, b::R, C::R,
+    function JRNeuralDiffusionAux1(A::R, a::R, B::R, b::R, C::R,
                         νmax::R, v0::R ,r::R, σx::R, σy::R, σz::R, t::Float64, u::S1,
                         T::Float64, v::S2) where {R, S1, S2}
         new{R, S1, S2}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, σx, σy, σz, t, u, T, v)
@@ -129,15 +129,15 @@ struct JRNeuralDiffusionAux{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
 end
 
 """
-    d1sigm(x, P::JRNeuralDiffusionAux{T, S1, S2})
+    d1sigm(x, P::JRNeuralDiffusionAux1{T, S1, S2})
 
 derivative of sigmoid function
 """
-function d1sigm(x, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
+function d1sigm(x, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
     P.νmax*r*exp(r*(v0 - x))/(1 + exp(r*(v0 - x)))^2
 end
 
-function B(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
+function B(t, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
     @SMatrix [0.0  0.0  0.0  1.0  0.0  0.0;
               0.0  0.0  0.0  0.0  1.0  0.0;
               0.0  0.0  0.0  0.0  0.0  1.0;
@@ -147,14 +147,14 @@ function B(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
 end
 
 
-function β(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
+function β(t, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
     ℝ{6}(0.0, 0.0, 0.0,
         P.A*P.a*(μx(t, P) + sigm(P.v[2] - P.v[3], P) - d1sigm(P.v[2] - P.v[3], P)*(P.v[2] - P.v[3])),
         P.A*P.a*(μy(t, P) + P.C2*(sigm(P.C1*P.v[1], P) - d1sigm(P.C1*P.v[1], P)*(P.C1*P.v[1]))),
         P.B*P.b*(μz(t, P) + P.C4*(sigm(P.C3*P.v[1], P) - d1sigm(P.C3*P.v[1], P)*(P.C3*P.v[1]))) )
 end
 
-function σ(t, P::JRNeuralDiffusionAux{T, S1, S2}) where {T, S1, S2}
+function σ(t, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
     @SMatrix    [0.0  0.0  0.0;
                 0.0  0.0  0.0;
                 0.0  0.0  0.0;
@@ -165,14 +165,104 @@ end
 
 
 
-b(t, x, P::JRNeuralDiffusionAux) = B(t,P) * x + β(t,P)
-a(t, P::JRNeuralDiffusionAux) = σ(t,P) * σ(t, P)'
+b(t, x, P::JRNeuralDiffusionAux1) = B(t,P) * x + β(t,P)
+a(t, P::JRNeuralDiffusionAux1) = σ(t,P) * σ(t, P)'
 
-clone(P::JRNeuralDiffusionAux, θ) = JRNeuralDiffusionAux(θ..., P.t,
+clone(P::JRNeuralDiffusionAux1, θ) = JRNeuralDiffusionAux1(θ..., P.t,
                                                          P.u, P.T, P.v)
 
-clone(P::JRNeuralDiffusionAux, θ, v) = JRNeuralDiffusionAux(θ..., P.t,
+clone(P::JRNeuralDiffusionAux1, θ, v) = JRNeuralDiffusionAux1(θ..., P.t,
                                                             zero(v), P.T, v)
 
-params(P::JRNeuralDiffusionAux) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
+params(P::JRNeuralDiffusionAux1) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
+    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σx, P.σy, P.σz]
+
+
+"""
+    JRNeuralDiffusionaAux2{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
+
+structure for the auxiliary process defined as linearized process in the final point
+for the random variable V_t = LX_t and around the point tt in ℝ¹ (user choice, if not specified around v0) for the unobserved first components.
+the final point v should be a float number or an array?
+"""
+struct JRNeuralDiffusionAux2{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
+    tt::R
+    A::R
+    a::R
+    B::R
+    b::R
+    C1::R
+    C2::R
+    C3::R
+    C4::R
+    νmax::R
+    v0::R
+    r::R
+    μx::R
+    μy::R
+    μz::R
+    σx::R
+    σy::R
+    σz::R
+    u::S1
+    t::Float64
+    v::S2
+    T::Float64
+    # default generator
+    function JRNeuralDiffusionAux2(A::R, a::R, B::R, b::R, C1::R, C2::R, C3::R, C4::R,
+                        νmax::R, v0::R , r::R, μx::R, μy::R, μz::R, σx::R,
+                         σy::R, σz::R, t::Float64, u::S1, T::Float64, v::S2; tt = v0) where {R, S1, S2}
+        new{R, S1, S2}(tt, A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σx, σy, σz, t, u, T, v)
+    end
+
+    # generator given assumptions paper
+    function JRNeuralDiffusionAux2(A::R, a::R, B::R, b::R, C::R,
+                        νmax::R, v0::R ,r::R, σx::R, σy::R, σz::R, t::Float64, u::S1,
+                        T::Float64, v::S2; tt = v0) where {R, S1, S2}
+        new{R, S1, S2}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, σx, σy, σz, t, u, T, v)
+    end
+end
+
+"""
+    d1sigm(x, P::JRNeuralDiffusionAux2{T, S1, S2})
+
+derivative of sigmoid function
+"""
+function d1sigm(x, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
+    P.νmax*r*exp(r*(v0 - x))/(1 + exp(r*(v0 - x)))^2
+end
+
+
+function B(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
+    @SMatrix [0.0  0.0  0.0  1.0  0.0  0.0;
+              0.0  0.0  0.0  0.0  1.0  0.0;
+              0.0  0.0  0.0  0.0  0.0  1.0;
+              -P.a*P.a  P.A*P.a*d1sigm(P.v[1], P)  -P.A*P.a*d1sigm(P.v[1], P)   -2P.a  0.0  0.0;
+              P.A*P.a*P.C1*P.C2*d1sigm(P.C1*P.tt, P)  -P.a*P.a  0.0  0.0  -2P.a  0.0;
+              P.B*P.b*P.C3*P.C4*d1sigm(P.C3*P.tt, P)  0.0  -P.b*P.b  0.0  0.0  -2P.b]
+end
+
+
+function β(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
+    ℝ{6}(0.0, 0.0, 0.0,
+        P.A*P.a*(μx(t, P) + sigm(P.v[1], P) - d1sigm(P.v[1], P)*(P.v[1])),
+        P.A*P.a*(μy(t, P) + P.C2*(sigm(P.C1*P.tt[1], P) - d1sigm(P.C1*P.tt[1], P)*(P.C1*P.tt[1]))),
+        P.B*P.b*(μz(t, P) + P.C4*(sigm(P.C3*P.tt[1], P) - d1sigm(P.C3*P.tt[1], P)*(P.C3*P.tt[1]))) )
+end
+
+function σ(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
+    @SMatrix    [0.0  0.0  0.0;
+                0.0  0.0  0.0;
+                0.0  0.0  0.0;
+                P.σx  0.0  0.0;
+                0.0  P.σy  0.0;
+                0.0  0.0  P.σz;]
+end
+
+
+b(t, x, P::JRNeuralDiffusionAux2) = B(t,P) * x + β(t,P)
+a(t, P::JRNeuralDiffusionAux2) = σ(t,P) * σ(t, P)'
+clone(P::JRNeuralDiffusionAux2, θ) = JRNeuralDiffusionAux(θ..., P.t, P.u, P.T, P.v)
+clone(P::JRNeuralDiffusionAux2, θ, v) = JRNeuralDiffusionAux(θ..., P.t, zero(v), P.T, v)
+params(P::JRNeuralDiffusionAux2) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
     P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σx, P.σy, P.σz]

@@ -1,7 +1,7 @@
 ## Application of BridgeSDEInference.jl for the Jansen and Rit Neural Mass model.
 ### References
 Model: https://mathematical-neuroscience.springeropen.com/articles/10.1186/s13408-017-0046-4, equation 4.
-
+ABC inference: https://arxiv.org/pdf/1903.01138.pdf, section 5
 ### Defining the model and observation scheme:
 The non-linear hypo-elliptic 6-dimensional JRNM model is defined through the function
 ```julia

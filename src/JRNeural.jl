@@ -86,6 +86,17 @@ clone(::JRNeuralDiffusion, θ) = JRNeuralDiffusion(θ...)
 params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
     P.v0, P.r, P.μx, P.μy, P.μ_z, P.σx, P.σy, P.σz]
 
+
+#drift as b^[2](t, x) = μ*ϕ + R(t, x)
+#vetor in ℝ³ ?
+phi(t, x, P::JRNeuralDiffusion) = [ 0 P.A*P.a0 0]
+
+#vetor in ℝ³ ?
+R(t, x, P::JRNeuralDiffusion) = [P.A*P.a*(P.μx + sigm(x[2] - x[3], P)) - 2P.a x[4] - P.a*P.a*x[1]
+                                P.A*P.a*P.C2*sigm(P.C1*x[1], P) - 2P.a x[5] - P.a*P.a*x[2]
+                                P.B*P.b*(P.μz + P.C4*sigm(P.C3*x[1], P)) - 2P.b x[6] - P.b*P.b*x[3] ]
+
+
 """
     JRNeuralDiffusionaAux1{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
 

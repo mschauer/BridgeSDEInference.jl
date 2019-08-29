@@ -83,13 +83,13 @@ start = time()
                          saveIter=saveIter,
                          verbIter=10^2,
                          #TOCHANGE
-                         updtCoord=(Val((true, false, false)),
-                                    Val((false, true, false)),
+                         updtCoord=(Val((false, true, false)),
+                                    Val((true, false, false)),
                                     Val((false, false, true)),
                                     ),
                          paramUpdt=true,
-                         updtType=(MetropolisHastingsUpdt()
-                                    ConjugateUpdt(),
+                         updtType=(ConjugateUpdt(),
+                                    MetropolisHastingsUpdt(),
                                     MetropolisHastingsUpdt(),
                                     ),
                          skipForSave=10^0,

@@ -262,8 +262,8 @@ end
 function β(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
     ℝ{6}(0.0, 0.0, 0.0,
         P.A*P.a*(μx(t, P) + sigm(P.v[1], P) - d1sigm(P.v[1], P)*(P.v[1])),
-        P.A*P.a*(μy(t, P) + P.C2*(sigm(P.C1*P.tt[1], P) - d1sigm(P.C1*P.tt[1], P)*(P.C1*P.tt[1]))),
-        P.B*P.b*(μz(t, P) + P.C4*(sigm(P.C3*P.tt[1], P) - d1sigm(P.C3*P.tt[1], P)*(P.C3*P.tt[1]))) )
+        P.A*P.a*(μy(t, P) + P.C2*(sigm(P.C1*P.tt, P) - d1sigm(P.C1*P.tt, P)*(P.C1*P.tt))),
+        P.B*P.b*(μz(t, P) + P.C4*(sigm(P.C3*P.tt, P) - d1sigm(P.C3*P.tt, P)*(P.C3*P.tt))) )
 end
 
 function σ(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}

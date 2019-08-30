@@ -88,7 +88,7 @@ params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.ν
 
 
 
-#### Inference for the triple (σy, μy, C) where μy is Gaussian conjugate
+#### Inference for the parametres (σy, μy, C, b) where μy is Gaussian conjugate
 
 #drift as b^[2](t, x) = μ*ϕ + R(t, x)
 #vector in ℝ³ corresponding to R(t, x)
@@ -99,7 +99,7 @@ phi(::Val{0}, t, x, P::JRNeuralDiffusion) = @SVector [P.A*P.a*(P.μx + sigm(x[2]
 phi(::Val{1}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 phi(::Val{2}, t, x, P::JRNeuralDiffusion) = @SVector  [0, P.A*P.a0, 0]
 phi(::Val{3}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
-
+phi(::Val{4}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 
 
 """

@@ -52,10 +52,13 @@ Ls = [L for _ in P̃]
 numSteps=1*10^5
 saveIter=3*10^2
 
-## For σ_y (strictly positive), μ, C (positive)
-tKernel = RandomWalk([5.0, 0.0, 5.0],
-                     [true, false, true])
-priors = Priors((ImproperPrior(), Normal(0.0, 100.0), ImproperPrior()))
+## For σ_y (positive), μ_y, C (positive), b (positive)
+tKernel = RandomWalk([5.0, 0.0, 5.0, 5.0],
+               [true, false, true, true])
+
+## Automatic assignment of indecesForUpdt
+priors = Priors((ImproperPrior(), Normal(0.0, 100.0), ImproperPrior(),  ImproperPrior()))
+
 
 𝔅 = NoBlocking()
 blockingParams = ([], 0.1, NoChangePt())
@@ -83,13 +86,15 @@ start = time()
                          saveIter=saveIter,
                          verbIter=10^2,
                          #TOCHANGE
-                         updtCoord=(Val((true, false, false)),
-                                    Val((false, true, false)),
-                                    Val((false, false, true)),
+                         updtCoord=(Val((true, false, false, false)),
+                                    Val((false, true, false, false)),
+                                    Val((false, false, true, false)),
+                                    Val((false, false, false, true)),
                                     ),
                          paramUpdt=true,
                          updtType=(MetropolisHastingsUpdt(),
                                     ConjugateUpdt(),
+                                    MetropolisHastingsUpdt(),
                                     MetropolisHastingsUpdt(),
                                     ),
                          skipForSave=10^0,

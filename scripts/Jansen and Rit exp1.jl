@@ -36,9 +36,9 @@ filename = "jr_path_part_obs.csv"
 P˟ = JRNeuralDiffusion(θ₀...)
 
 # Auxiliary law
-#TODO
 P̃ = [JRNeuralDiffusionAux2(θ₀..., t₀, u[1], T, v[1]) for (t₀,T,u,v)
      in zip(obsTime[1:end-1], obsTime[2:end], obs[1:end-1], obs[2:end])]
+
 display(P̃[1])
 
 
@@ -83,13 +83,13 @@ start = time()
                          saveIter=saveIter,
                          verbIter=10^2,
                          #TOCHANGE
-                         updtCoord=(Val((false, true, false)),
-                                    Val((true, false, false)),
+                         updtCoord=(Val((true, false, false)),
+                                    Val((false, true, false)),
                                     Val((false, false, true)),
                                     ),
                          paramUpdt=true,
-                         updtType=(ConjugateUpdt(),
-                                    MetropolisHastingsUpdt(),
+                         updtType=(MetropolisHastingsUpdt(),
+                                    ConjugateUpdt(),
                                     MetropolisHastingsUpdt(),
                                     ),
                          skipForSave=10^0,

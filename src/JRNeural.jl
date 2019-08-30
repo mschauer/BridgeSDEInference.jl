@@ -87,15 +87,17 @@ params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.ν
     P.v0, P.r, P.μx, P.μy, P.μ_z, P.σx, P.σy, P.σz]
 
 
-#### Conjugate posterior for μ_y  ###
+
+#### Inference for the triple (σy, μy, C) where μy is Gaussian conjugate
+
 #drift as b^[2](t, x) = μ*ϕ + R(t, x)
-#vector in ℝ³
+#vector in ℝ³ corresponding to R(t, x)
 phi(::Val{0}, t, x, P::JRNeuralDiffusion) = @SVector [P.A*P.a*(P.μx + sigm(x[2] - x[3], P)) - 2P.a x[4] - P.a*P.a*x[1],
                                 P.A*P.a*P.C2*sigm(P.C1*x[1], P) - 2P.a x[5] - P.a*P.a*x[2],
                                 P.B*P.b*(P.μz + P.C4*sigm(P.C3*x[1], P)) - 2P.b x[6] - P.b*P.b*x[3] ]
-#vector in ℝ³
-phi(::Val{1}, t, x, P::JRNeuralDiffusion) = @SVector  [0, P.A*P.a0, 0]
-phi(::Val{2}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
+#vectors in ℝ³
+phi(::Val{1}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
+phi(::Val{2}, t, x, P::JRNeuralDiffusion) = @SVector  [0, P.A*P.a0, 0]
 phi(::Val{3}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 
 
@@ -196,8 +198,8 @@ params(P::JRNeuralDiffusionAux1) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, 
     JRNeuralDiffusionaAux2{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
 
 structure for the auxiliary process defined as linearized process in the final point
-for the random variable V_t = LX_t and around the point tt in ℝ¹ (user choice, if not specified around v0) for the unobserved first components.
-the final point v should be a float number or an array?
+for the random variable V_t = LX_t and around the point tt in ℝ¹ (user choice, if not
+specified around v0) for the unobserved first components.
 """
 struct JRNeuralDiffusionAux2{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
     tt::R

@@ -9,6 +9,8 @@ using ForwardDiff: value
 export FitzhughDiffusion, FitzhughDiffusionAux
 export regularToAlter, alterToRegular, regularToConjug, conjugToRegular, display
 
+# JRNeural.jl
+export JRNeuralDiffusion, JRNeuralDiffusionAux1, JRNeuralDiffusionAux2
 # types.jl
 export ImproperPrior, NoChangePt, SimpleChangePt
 
@@ -32,6 +34,7 @@ export KnownStartingPt, GsnStartingPt
 
 
 include("fitzHughNagumo.jl")
+include("JRNeural.jl")
 include("fitzHughNagumo_conjugateUpdt.jl")
 
 include("types.jl")

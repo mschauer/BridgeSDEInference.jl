@@ -32,6 +32,7 @@ export KnownStartingPt, GsnStartingPt
 
 
 include("fitzHughNagumo.jl")
+include("JRNeural.jl")
 include("fitzHughNagumo_conjugateUpdt.jl")
 
 include("types.jl")

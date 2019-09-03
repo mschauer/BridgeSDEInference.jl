@@ -87,7 +87,7 @@ changePt = NoChangePt()
 #       0 0 0 0 1]
 #
 # GsnStartingPt(zeros(5), zeros(5), Σx0)
-x0 = @SVector [0., 0. , 0. , 0. , 0., 0.]
+x0 = ℝ{6}(0.08,18,15,-0.5,0,0)
 x0Pr = KnownStartingPt(x0)
 
 warmUp = 100

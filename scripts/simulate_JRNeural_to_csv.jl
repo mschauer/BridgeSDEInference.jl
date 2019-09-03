@@ -15,7 +15,7 @@ FILENAME_OUT = joinpath(OUT_DIR,
 
 ### parameters as Table 1  of
 # https://mathematical-neuroscience.springeropen.com/articles/10.1186/s13408-017-0046-4
-P = JRNeuralDiffusion(3.25, 100.0, 22.0, 50.0 , 135.0, 5.0, 6.0, 0.56, 0.0, 220.0, 0.0, 0.0, 2000.0, 0.0)
+P = JRNeuralDiffusion(3.25, 100.0, 22.0, 50.0 , 135.0, 5.0, 6.0, 0.56, 0.0, 220.0, 0.0,2000.0)
 # starting point under :regular parametrisation
 
 

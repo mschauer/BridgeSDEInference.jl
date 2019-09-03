@@ -272,7 +272,7 @@ end
 
 definition of sigmoid function
 """
-function sigm(x, P::JRNeuralDiffusionAux1{T}) where T
+function sigm(x, P::JRNeuralDiffusionAux2{T}) where T
     P.νmax / (1 + exp(P.r*(P.v0 - x)))
 end
 

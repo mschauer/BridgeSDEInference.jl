@@ -92,8 +92,7 @@ end
 constdiff(::JRNeuralDiffusion) = true
 clone(::JRNeuralDiffusion, θ) = JRNeuralDiffusion(θ...)
 params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
-    P.v0, P.r, P.μx, P.μy, P.μ_z, P.σy]
-
+    P.v0, P.r, P.μx, P.μy, P.μz, P.σy]
 
 
 #### Inference for the parametres (σy, μy, C, b) where μy is Gaussian conjugate
@@ -217,9 +216,10 @@ clone(P::JRNeuralDiffusionAux1, θ) = JRNeuralDiffusionAux1(θ..., P.t,
 
 clone(P::JRNeuralDiffusionAux1, θ, v) = JRNeuralDiffusionAux1(θ..., P.t,
                                                             zero(v), P.T, v)
+constdiff(::JRNeuralDiffusionAux1) = true
 
 params(P::JRNeuralDiffusionAux1) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
-    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σy ]
+    P.v0, P.r, P.μx, P.μy, P.μz, P.σy ]
 
 ###Assumption papers on parameters
 #newparam((A, a, B, b, C, νmax, v0 ,r, μx, μy, μz, σx, σy, σz)) = [A, a, B, b,
@@ -331,7 +331,10 @@ end
 
 b(t, x, P::JRNeuralDiffusionAux2) = B(t,P) * x + β(t,P)
 a(t, P::JRNeuralDiffusionAux2) = σ(t,P) * σ(t, P)'
-clone(P::JRNeuralDiffusionAux2, θ) = JRNeuralDiffusionAux(θ..., P.t, P.u, P.T, P.v)
-clone(P::JRNeuralDiffusionAux2, θ, v) = JRNeuralDiffusionAux(θ..., P.t, zero(v), P.T, v)
+clone(P::JRNeuralDiffusionAux2, θ) = JRNeuralDiffusionAux2(θ..., P.t, P.u, P.T, P.v)
+clone(P::JRNeuralDiffusionAux2, θ, v) = JRNeuralDiffusionAux2(θ..., P.t, zero(v), P.T, v)
 params(P::JRNeuralDiffusionAux2) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
-    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z,  P.σy]
+    P.v0, P.r, P.μx, P.μy, P.μz,  P.σy]
+
+constdiff(::JRNeuralDiffusionAux2) = true
+dependsOnParams(::JRNeuralDiffusionAux2) = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)

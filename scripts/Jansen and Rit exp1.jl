@@ -8,15 +8,16 @@ AUX_DIR = joinpath(SRC_DIR, "auxiliary")
 OUT_DIR = joinpath(Base.source_dir(), "..", "output")
 mkpath(OUT_DIR)
 
-include(joinpath(SRC_DIR, "BridgeSDEInference.jl"))
-using Main.BridgeSDEInference
+#include(joinpath(SRC_DIR, "BridgeSDEInference.jl"))
+using BridgeSDEInference
+using BridgeSDEInference: JRNeuralDiffusion, JRNeuralDiffusionAux2
 using Distributions # to define priors
 using Random        # to seed the random number generator
 using DataFrames
 using CSV
 include(joinpath(AUX_DIR, "read_and_write_data.jl"))
 include(joinpath(AUX_DIR, "transforms.jl"))
-include(joinpath(SRC_DIR, "JRNeural.jl"))
+#include(joinpath(SRC_DIR, "JRNeural.jl"))
 # decide if first passage time observations or partially observed diffusion
 fptObsFlag = false
 
@@ -95,7 +96,7 @@ start = time()
 
 
 (chain, accRateImp, accRateUpdt,
-    paths, time_) = mcmc(eltype(x0), fptOrPartObs, obs, obsTime, x0Pr, 0.0, P˟,
+    paths, time_) = mcmc(eltype(x0), fptOrPartObs, obs, obsTime, x0Pr, SVector(0.0), P˟,
                          P̃, Ls, Σs, numSteps, tKernel, priors, τ;
                          fpt=fpt,
                          ρ=0.975,

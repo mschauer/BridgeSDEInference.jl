@@ -26,18 +26,16 @@ struct JRNeuralDiffusion{T} <: ContinuousTimeProcess{ℝ{6, T}}
     μx::T
     μy::T
     μz::T
-    σx::T
     σy::T
-    σz::T
     # default constructor
     function JRNeuralDiffusion(A::T, a::T, B::T, b::T, C1::T,  C2::T,  C3::T,  C4::T,
-            νmax::T, v0::T ,r::T, μx::T, μy::T, μz::T, σx::T, σy::T, σz::T) where T
-        new{T}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σx, σy, σz)
+            νmax::T, v0::T ,r::T, μx::T, μy::T, μz::T, σy::T) where T
+        new{T}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σy)
     end
     # constructor given assumption statistical paper
     function JRNeuralDiffusion(A::T, a::T, B::T, b::T, C::T,
-            νmax::T, v0::T ,r::T, μx::T, μy::T, μz::T, σx::T, σy::T, σz::T) where T
-        new{T}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, μx, μy, μz, σx, σy, σz)
+            νmax::T, v0::T ,r::T, μx::T, μy::T, μz::T, σy::T) where T
+        new{T}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, μx, μy, μz, σy)
     end
 end
 
@@ -94,7 +92,7 @@ end
 constdiff(::JRNeuralDiffusion) = true
 clone(::JRNeuralDiffusion, θ) = JRNeuralDiffusion(θ...)
 params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
-    P.v0, P.r, P.μx, P.μy, P.μ_z, P.σx, P.σy, P.σz]
+    P.v0, P.r, P.μx, P.μy, P.μ_z, P.σy]
 
 
 
@@ -131,25 +129,23 @@ struct JRNeuralDiffusionAux1{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
     μx::R
     μy::R
     μz::R
-    σx::R
     σy::R
-    σz::R
     u::S1
     t::Float64
     v::S2
     T::Float64
     # default generator
     function JRNeuralDiffusionAux1(A::R, a::R, B::R, b::R, C1::R, C2::R, C3::R, C4::R,
-                        νmax::R, v0::R , r::R, μx::R, μy::R, μz::R, σx::R,
-                         σy::R, σz::R, t::Float64, u::S1, T::Float64, v::S2) where {R, S1, S2}
-        new{R, S1, S2}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σx, σy, σz, t, u, T, v)
+                        νmax::R, v0::R , r::R, μx::R, μy::R, μz::R,
+                        σy::R, t::Float64, u::S1, T::Float64, v::S2) where {R, S1, S2}
+        new{R, S1, S2}(A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σy, t, u, T, v)
     end
 
     # generator given assumptions paper
     function JRNeuralDiffusionAux1(A::R, a::R, B::R, b::R, C::R,
-                        νmax::R, v0::R ,r::R, σx::R, σy::R, σz::R, t::Float64, u::S1,
+                        νmax::R, v0::R ,r::R, σy::R, t::Float64, u::S1,
                         T::Float64, v::S2) where {R, S1, S2}
-        new{R, S1, S2}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, σx, σy, σz, t, u, T, v)
+        new{R, S1, S2}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, σy, t, u, T, v)
     end
 end
 """
@@ -203,12 +199,12 @@ function β(t, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
 end
 
 function σ(t, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
-    @SMatrix    [0.0  0.0  0.0;
-                0.0  0.0  0.0;
-                0.0  0.0  0.0;
-                P.σx  0.0  0.0;
-                0.0  P.σy  0.0;
-                0.0  0.0  P.σz;]
+    @SMatrix     [0.0 ;
+                0.0  ;
+                0.0  ;
+                0.0 ;
+                 P.σy;
+                0.0 ]
 end
 
 
@@ -223,7 +219,7 @@ clone(P::JRNeuralDiffusionAux1, θ, v) = JRNeuralDiffusionAux1(θ..., P.t,
                                                             zero(v), P.T, v)
 
 params(P::JRNeuralDiffusionAux1) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
-    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σx, P.σy, P.σz]
+    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σy ]
 
 ###Assumption papers on parameters
 #newparam((A, a, B, b, C, νmax, v0 ,r, μx, μy, μz, σx, σy, σz)) = [A, a, B, b,
@@ -251,29 +247,25 @@ struct JRNeuralDiffusionAux2{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
     μx::R
     μy::R
     μz::R
-    σx::R
     σy::R
-    σz::R
     u::S1
     t::Float64
     v::S2
     T::Float64
     # default generator
     function JRNeuralDiffusionAux2(A::R, a::R, B::R, b::R, C1::R, C2::R, C3::R, C4::R,
-                        νmax::R, v0::R , r::R, μx::R, μy::R, μz::R, σx::R,
-                         σy::R, σz::R, t::Float64, u::S1, T::Float64, v::S2; tt = v0) where {R, S1, S2}
-        new{R, S1, S2}(tt, A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σx, σy, σz, t, u, T, v)
+                        νmax::R, v0::R , r::R, μx::R, μy::R, μz::R, σy::R,  t::Float64, u::S1, T::Float64, v::S2; tt = v0) where {R, S1, S2}
+        new{R, S1, S2}(tt, A, a, B, b, C1, C2, C3, C4, νmax, v0, r, μx, μy, μz, σy, t, u, T, v)
     end
 
     # generator given assumptions paper
     function JRNeuralDiffusionAux2(A::R, a::R, B::R, b::R, C::R,
-            νmax::R, v0::R ,r::R, μx::R, μy::R, μz::R, σx::R, σy::R, σz::R, t::Float64, u::S1,
+            νmax::R, v0::R ,r::R, μx::R, μy::R, μz::R,  σy::R, t::Float64, u::S1,
                         T::Float64, v::S2; tt = v0) where {R, S1, S2}
-        new{R, S1, S2}(tt, A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, μx, μy, μz, σx, σy, σz, t, u, T, v)
+        new{R, S1, S2}(tt, A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, μx, μy, μz, σy, t, u, T, v)
     end
 end
 
-prova = JRNeuralDiffusionAux2(3.25, 0.1, 22.0, 0.05 , 135.0, 5.0, 6.0, 0.56, 0.0, 220.0, 0.0, 0.01 , 2000.0, 1.0, 0.0, 0.0, 1.0, 2.0)
 
 """
     sigm(x, P::JRNeuralDiffusionAux2)
@@ -328,12 +320,12 @@ function β(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
 end
 
 function σ(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
-    @SMatrix    [0.0  0.0  0.0;
-                0.0  0.0  0.0;
-                0.0  0.0  0.0;
-                P.σx  0.0  0.0;
-                0.0  P.σy  0.0;
-                0.0  0.0  P.σz;]
+    @SMatrix    [0.0 ;
+                0.0  ;
+                0.0  ;
+                0.0 ;
+                 P.σy;
+                0.0 ]
 end
 
 
@@ -342,4 +334,4 @@ a(t, P::JRNeuralDiffusionAux2) = σ(t,P) * σ(t, P)'
 clone(P::JRNeuralDiffusionAux2, θ) = JRNeuralDiffusionAux(θ..., P.t, P.u, P.T, P.v)
 clone(P::JRNeuralDiffusionAux2, θ, v) = JRNeuralDiffusionAux(θ..., P.t, zero(v), P.T, v)
 params(P::JRNeuralDiffusionAux2) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
-    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σx, P.σy, P.σz]
+    P.v0, P.r, P.μ_x, P.μ_y, P.μ_z,  P.σy]

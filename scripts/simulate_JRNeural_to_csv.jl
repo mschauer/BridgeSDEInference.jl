@@ -15,22 +15,21 @@ FILENAME_OUT = joinpath(OUT_DIR,
 
 ### parameters as Table 1  of
 # https://mathematical-neuroscience.springeropen.com/articles/10.1186/s13408-017-0046-4
-P = JRNeuralDiffusion(3.25, 100.0, 22.0, 50.0 , 135.0, 5.0, 6.0, 0.56, 0.0, 220.0, 0.0, 0.01 , 2000.0, 1.0)
+P = JRNeuralDiffusion(3.25, 100.0, 22.0, 50.0 , 135.0, 5.0, 6.0, 0.56, 0.0, 220.0, 0.0, 0.0, 2000.0, 0.0)
 # starting point under :regular parametrisation
 
-display(P)
 
+
+display(P)
 
 x0 = ℝ{6}(0.08,18,15,-0.5,0,0)
 
 dt = 1/100000
-T = 20.0
+T = 5.0
 tt = 0.0:dt:T
 
 Random.seed!(4)
-XX, _ = simulateSegment(ℝ{3}(0.0, 0.0, 0.0), x0, P, tt)
-
-XX
+XX, _ = simulateSegment(ℝ{1}( 0.0), x0, P, tt)
 
 
 XX.yy
@@ -42,5 +41,5 @@ df = DataFrame(time=Time, x1=[x[2] - x[3] for x in XX.yy[1:skip:end]])
 CSV.write(FILENAME_OUT, df)
 
 
-
+using Plots
 plot(df.time, df.x1)

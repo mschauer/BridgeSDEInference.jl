@@ -72,13 +72,23 @@ function b(t, x, P::JRNeuralDiffusion{T}) where T
 end
 
 #6X3 matrix
+# function σ(t, x, P::JRNeuralDiffusion{T}) where T
+#     @SMatrix    [0.0  0.0  0.0;
+#                 0.0  0.0  0.0;
+#                 0.0  0.0  0.0;
+#                 P.σx  0.0  0.0;
+#                 0.0  P.σy  0.0;
+#                 0.0  0.0  P.σz;]
+# end
+
+#6x1 matrix
 function σ(t, x, P::JRNeuralDiffusion{T}) where T
-    @SMatrix    [0.0  0.0  0.0;
-                0.0  0.0  0.0;
-                0.0  0.0  0.0;
-                P.σx  0.0  0.0;
-                0.0  P.σy  0.0;
-                0.0  0.0  P.σz;]
+    @SMatrix    [0.0;
+                0.0 ;
+                0.0 ;
+                0.0 ;
+                P.σy ;
+                0.0 ]
 end
 
 constdiff(::JRNeuralDiffusion) = true
@@ -101,9 +111,6 @@ phi(::Val{2}, t, x, P::JRNeuralDiffusion) = @SVector  [0, P.A*P.a0, 0]
 phi(::Val{3}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 phi(::Val{4}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 
-@SVector [1,
-    2,
-    3]
 """
     JRNeuralDiffusionaAux1{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
 
@@ -273,7 +280,7 @@ prova = JRNeuralDiffusionAux2(3.25, 0.1, 22.0, 0.05 , 135.0, 5.0, 6.0, 0.56, 0.0
 
 definition of sigmoid function
 """
-function sigm(x, P::JRNeuralDiffusionAux2{T}) where T
+function sigm(x, P::JRNeuralDiffusionAux1{T}) where T
     P.νmax / (1 + exp(P.r*(P.v0 - x)))
 end
 

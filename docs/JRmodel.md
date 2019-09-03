@@ -43,12 +43,12 @@ L = @SMatrix [0. 1. -1. 0. 0. 0.]
 For our purposes, we define 2 auxiliary models. One is the linearization of the original model at the final points (`JRNeuralDiffusionAux1`) and the second is the linearization of the original model for the difference the second and third dimension which we actually observe and a linearization around a point fixed by the user for the first dimension which we cannot observe directly (`JRNeuralDiffusionAux2`).
 
 ### Simulation
-As already discussed in [this note](docs/generate_data.md), in the file [generate_data.md](docs/generate_data.md) we simulate the whole process and retain at discrete time some data according to the above mentioned observation scheme. The plan is to use real data.
+As already discussed in [this note](docs/generate_data.md), in the file [simulate_JRNeural_to_csv.jl](../scripts/simulate_JRNeural_to_csv.jl) we simulate the whole process and retain at discrete time some data according to the above mentioned observation scheme. The plan is to use real data.
 
-### Statistical inference on some parameters
-As discussed in https://arxiv.org/pdf/1903.01138.pdf, subsection 5.2.1., there is a identifiability issue. We fix some parameters and we perform inference to the triple `σy, μy, C`. In the mcmc algorithm we set up a  conjugate step for `μy` and a Metropolis Hasting step for `σy` and `C`.  
+### Statistical inference of some parameters
+As discussed in https://arxiv.org/pdf/1903.01138.pdf, subsection 5.2.1., there is identifiability issues. We fix some parameters and we perform inference to the triple `σy, μy, C`. In the mcmc algorithm we set up a  conjugate step for `μy` and a Metropolis Hasting step for `σy` and `C`.  
 
-First we to define..... 
+.......
 
 
 for the conjugate step we need to set the functions \phi which will be used to represent the drift `b(t, x) = \phi_0(t,x) +  μy \phi_1(t, x)`  and we set `\phi_2(t, x)`, `\phi_3(t, x)` to `0` since we do not need to use these functions for `C` and `σy`

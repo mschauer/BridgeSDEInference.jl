@@ -92,16 +92,18 @@ params(P::JRNeuralDiffusion) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.ν
 
 #drift as b^[2](t, x) = μ*ϕ + R(t, x)
 #vector in ℝ³ corresponding to R(t, x)
-phi(::Val{0}, t, x, P::JRNeuralDiffusion) = @SVector [P.A*P.a*(P.μx + sigm(x[2] - x[3], P)) - 2P.a x[4] - P.a*P.a*x[1],
-                                P.A*P.a*P.C2*sigm(P.C1*x[1], P) - 2P.a x[5] - P.a*P.a*x[2],
-                                P.B*P.b*(P.μz + P.C4*sigm(P.C3*x[1], P)) - 2P.b x[6] - P.b*P.b*x[3] ]
+phi(::Val{0}, t, x, P::JRNeuralDiffusion) = @SVector [P.A*P.a*(P.μx + sigm(x[2] - x[3], P)) - 2P.a*x[4] - P.a*P.a*x[1],
+                                            P.A*P.a*P.C2*sigm(P.C1*x[1], P) - 2P.a*x[5] - P.a*P.a*x[2],
+                                            P.B*P.b*(P.μz + P.C4*sigm(P.C3*x[1], P)) - 2P.b*x[6] - P.b*P.b*x[3] ]
 #vectors in ℝ³
 phi(::Val{1}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 phi(::Val{2}, t, x, P::JRNeuralDiffusion) = @SVector  [0, P.A*P.a0, 0]
 phi(::Val{3}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 phi(::Val{4}, t, x, P::JRNeuralDiffusion) = @SVector [0.0, 0.0, 0.0]
 
-
+@SVector [1,
+    2,
+    3]
 """
     JRNeuralDiffusionaAux1{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
 
@@ -143,6 +145,14 @@ struct JRNeuralDiffusionAux1{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
         new{R, S1, S2}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, σx, σy, σz, t, u, T, v)
     end
 end
+"""
+    sigm(x, P::JRNeuralDiffusionAux1)
+
+definition of sigmoid function
+"""
+function sigm(x, P::JRNeuralDiffusionAux1{T}) where T
+    P.νmax / (1 + exp(P.r*(P.v0 - x)))
+end
 
 """
     d1sigm(x, P::JRNeuralDiffusionAux1{T, S1, S2})
@@ -150,8 +160,23 @@ end
 derivative of sigmoid function
 """
 function d1sigm(x, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
-    P.νmax*r*exp(r*(v0 - x))/(1 + exp(r*(v0 - x)))^2
+    P.νmax*P.r*exp(P.r*(P.v0 - x))/(1 + exp(P.r*(P.v0 - x)))^2
 end
+
+function μx(t, P::JRNeuralDiffusionAux1{T}) where T
+    P.μx
+end
+
+function μy(t, P::JRNeuralDiffusionAux1{T}) where T
+    P.μy
+end
+
+function μz(t, P::JRNeuralDiffusionAux1{T}) where T
+    P.μz
+end
+
+
+
 
 function B(t, P::JRNeuralDiffusionAux1{T, S1, S2}) where {T, S1, S2}
     @SMatrix [0.0  0.0  0.0  1.0  0.0  0.0;
@@ -193,7 +218,9 @@ clone(P::JRNeuralDiffusionAux1, θ, v) = JRNeuralDiffusionAux1(θ..., P.t,
 params(P::JRNeuralDiffusionAux1) = [P.A, P.a, P.B, P.b, P.C1, P.C2, P.C3, P.C4, P.νmax,
     P.v0, P.r, P.μ_x, P.μ_y, P.μ_z, P.σx, P.σy, P.σz]
 
-
+###Assumption papers on parameters
+#newparam((A, a, B, b, C, νmax, v0 ,r, μx, μy, μz, σx, σy, σz)) = [A, a, B, b,
+#                                C, 0.8C, 0.25C, 0.25C, νmax, v0, r, σx, σy, σz]
 """
     JRNeuralDiffusionaAux2{T, S1, S2} <: ContinuousTimeProcess{ℝ{6, T}}
 
@@ -233,10 +260,21 @@ struct JRNeuralDiffusionAux2{R, S1, S2} <: ContinuousTimeProcess{ℝ{6, R}}
 
     # generator given assumptions paper
     function JRNeuralDiffusionAux2(A::R, a::R, B::R, b::R, C::R,
-                        νmax::R, v0::R ,r::R, σx::R, σy::R, σz::R, t::Float64, u::S1,
+            νmax::R, v0::R ,r::R, μx::R, μy::R, μz::R, σx::R, σy::R, σz::R, t::Float64, u::S1,
                         T::Float64, v::S2; tt = v0) where {R, S1, S2}
-        new{R, S1, S2}(A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, σx, σy, σz, t, u, T, v)
+        new{R, S1, S2}(tt, A, a, B, b, C, 0.8C, 0.25C, 0.25C, νmax, v0, r, μx, μy, μz, σx, σy, σz, t, u, T, v)
     end
+end
+
+prova = JRNeuralDiffusionAux2(3.25, 0.1, 22.0, 0.05 , 135.0, 5.0, 6.0, 0.56, 0.0, 220.0, 0.0, 0.01 , 2000.0, 1.0, 0.0, 0.0, 1.0, 2.0)
+
+"""
+    sigm(x, P::JRNeuralDiffusionAux2)
+
+definition of sigmoid function
+"""
+function sigm(x, P::JRNeuralDiffusionAux2{T}) where T
+    P.νmax / (1 + exp(P.r*(P.v0 - x)))
 end
 
 """
@@ -245,8 +283,24 @@ end
 derivative of sigmoid function
 """
 function d1sigm(x, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}
-    P.νmax*r*exp(r*(v0 - x))/(1 + exp(r*(v0 - x)))^2
+    P.νmax*P.r*exp(P.r*(P.v0 - x))/(1 + exp(P.r*(P.v0 - x)))^2
 end
+
+function μx(t, P::JRNeuralDiffusionAux2{T}) where T
+    P.μx
+end
+
+function μy(t, P::JRNeuralDiffusionAux2{T}) where T
+    P.μy
+end
+
+function μz(t, P::JRNeuralDiffusionAux2{T}) where T
+    P.μz
+end
+
+
+
+
 
 
 function B(t, P::JRNeuralDiffusionAux2{T, S1, S2}) where {T, S1, S2}

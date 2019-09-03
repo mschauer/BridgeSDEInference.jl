@@ -16,22 +16,22 @@ using DataFrames
 using CSV
 include(joinpath(AUX_DIR, "read_and_write_data.jl"))
 include(joinpath(AUX_DIR, "transforms.jl"))
-
+include(joinpath(SRC_DIR, "JRNeural.jl"))
 # decide if first passage time observations or partially observed diffusion
 fptObsFlag = false
 
 # pick dataset
 filename = "jr_path_part_obs.csv"
+init_obs = "jr_initial_obs.csv"
 
 # fetch the data
 (df, x0, obs, obsTime, fpt,
-      fptOrPartObs) = readData(Val(fptObsFlag), joinpath(OUT_DIR, filename))
+      fptOrPartObs) = readDataJRmodel(Val(fptObsFlag), joinpath(OUT_DIR, filename))
 
 
 # Initial parameter guess.
 
 θ₀ = [3.25, 0.1, 22.0, 0.05 , 135.0, 5.0, 6.0, 0.56, 0.0, 220.0, 0.0, 0.01 , 2000.0, 1.0]
-
 # Target law
 P˟ = JRNeuralDiffusion(θ₀...)
 
@@ -40,7 +40,6 @@ P̃ = [JRNeuralDiffusionAux2(θ₀..., t₀, u[1], T, v[1]) for (t₀,T,u,v)
      in zip(obsTime[1:end-1], obsTime[2:end], obs[1:end-1], obs[2:end])]
 
 display(P̃[1])
-
 
 L = @SMatrix [0. 1. -1. 0. 0. 0.]
 Σdiagel = 10^(-10)
@@ -65,18 +64,36 @@ blockingParams = ([], 0.1, NoChangePt())
 
 changePt = NoChangePt()
 
-#x0Pr = KnownStartingPt(x0)
-
-x0Pr = GsnStartingPt(x0, x0, @SMatrix [20. 0 0 0 0 0;
-                                    0 20. 0 0 0 0;
-                                    0 0 20. 0 0 0;
-                                    0 0 0 20. 0 0;
-                                    0 0 0 0 20. 0;
-                                    0 0 0 0 0 20.])
+# Σx0 = @SMatrix [20. 0 0 0 0 0;
+#       0 20.0 0 0 0 0;
+#       0 0 20.0 0 0 0;
+#       0 0 0 20.0 0 0;
+#       0 0 0 0 20.0 0;
+#       0 0 0 0 0 20.0]
+#
+#       Σx0 = @SMatrix [20. 0 0 0 0;
+#             0 20.0 0 0 0 ;
+#             0 0 20.0 0 0 ;
+#             0 0 0 20.0 0 ;
+#             0 0 0 0 20.0 ]
+#
+#
+# Lx0pr = [1 0 0 0 0;
+#       0 1 0 0 0 ;
+#       0 (1 - x0) 0 0 0
+#       0 0 1 0 0;
+#       0 0 0 1 0;
+#       0 0 0 0 1]
+#
+# GsnStartingPt(zeros(5), zeros(5), Σx0)
+x0 = @SVector [0., 0. , 0. , 0. , 0., 0.]
+x0Pr = KnownStartingPt(x0)
 
 warmUp = 100
 Random.seed!(4)
 start = time()
+
+
 (chain, accRateImp, accRateUpdt,
     paths, time_) = mcmc(eltype(x0), fptOrPartObs, obs, obsTime, x0Pr, 0.0, P˟,
                          P̃, Ls, Σs, numSteps, tKernel, priors, τ;

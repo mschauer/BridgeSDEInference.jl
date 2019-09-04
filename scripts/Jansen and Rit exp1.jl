@@ -39,9 +39,7 @@ P˟ = JRNeuralDiffusion(θ₀...)
 # Auxiliary law
 P̃ = [JRNeuralDiffusionAux2(θ₀..., t₀, u[1], T, v[1]) for (t₀,T,u,v)
      in zip(obsTime[1:end-1], obsTime[2:end], obs[1:end-1], obs[2:end])]
-
-display(P̃[1])
-
+#display(P̃[1]
 L = @SMatrix [0. 1. -1. 0. 0. 0.]
 Σdiagel = 10^(-10)
 Σ = @SMatrix [Σdiagel]
@@ -49,12 +47,14 @@ L = @SMatrix [0. 1. -1. 0. 0. 0.]
 Ls = [L for _ in P̃]
 Σs = [Σ for _ in P̃]
 τ(t₀,T) = (x) ->  t₀ + (x-t₀) * (2-(x-t₀)/(T-t₀))
-numSteps=1*10^5
+numSteps=1*10^3
 saveIter=3*10^2
 
+# ordered vectors A, a, B, b, C, νmax, v0, r, μx, μy, μz, σy
 ## For σ_y (positive), μ_y, C (positive), b (positive)
-tKernel = RandomWalk([5.0, 0.0, 5.0, 5.0],
-               [true, false, true, true])
+positive = [false, false, false, true, true, false, false, false, false, false, false, true ]
+tKernel = RandomWalk(fill(1.0, 12), positive
+               )
 
 ## Automatic assignment of indecesForUpdt
 priors = Priors((ImproperPrior(), Normal(0.0, 100.0), ImproperPrior(),  ImproperPrior()))
@@ -87,7 +87,7 @@ changePt = NoChangePt()
 #       0 0 0 0 1]
 #
 # GsnStartingPt(zeros(5), zeros(5), Σx0)
-x0 = ℝ{6}(0.08,18,15,-0.5,0,0)
+x0 = ℝ{6}(0.08, 18, 15, -0.5, 0, 0)
 x0Pr = KnownStartingPt(x0)
 
 warmUp = 100
@@ -104,16 +104,19 @@ start = time()
                          saveIter=saveIter,
                          verbIter=10^2,
                          #TOCHANGE
-                         updtCoord=(Val((true, false, false, false)),
-                                    Val((false, true, false, false)),
-                                    Val((false, false, true, false)),
-                                    Val((false, false, false, true)),
+                         updtCoord=( Val((false, false, false, false, true, false,
+                                    false, false, false, false, false, false)),
+                                    #Val((true, false, false, false)),
+                                    #Val((false, true, false, false)),
+                                    #Val((false, false, true, false)),
+                                    #Val((false, false, false, true)),
                                     ),
-                         paramUpdt=true,
+                         #paramUpdt=true,
+                         paramUpdt=false,
                          updtType=(MetropolisHastingsUpdt(),
-                                    ConjugateUpdt(),
-                                    MetropolisHastingsUpdt(),
-                                    MetropolisHastingsUpdt(),
+                                    #ConjugateUpdt(),
+                                    #MetropolisHastingsUpdt(),
+                                    #MetropolisHastingsUpdt(),
                                     ),
                          skipForSave=10^0,
                          blocking=𝔅,
@@ -124,22 +127,22 @@ start = time()
 elapsed = time() - start
 print("time elapsed: ", elapsed, "\n")
 
-print("imputation acceptance rate: ", accRateImp,
-      ", parameter update acceptance rate: ", accRateUpdt)
+#print("imputation acceptance rate: ", accRateImp,
+#      ", parameter update acceptance rate: ", accRateUpdt)
 
-x0⁺, pathsToSave = transformMCMCOutput(x0, paths, saveIter; chain=chain,
-                                       numGibbsSteps=2,
-                                       parametrisation=param,
-                                       warmUp=warmUp)
+#x0⁺, pathsToSave = transformMCMCOutput(x0, paths, saveIter; chain=chain,
+#                                       numGibbsSteps=2,
+#                                       parametrisation=param,
+#                                       warmUp=warmUp)
 
 
-df2 = savePathsToFile(pathsToSave, time_, joinpath(OUT_DIR, "jr_sampled_paths.csv"))
-df3 = saveChainToFile(chain, joinpath(OUT_DIR, "jr_chain.csv"))
+#df2 = savePathsToFile(pathsToSave, time_, joinpath(OUT_DIR, "jr_sampled_paths.csv"))
+#df3 = saveChainToFile(chain, joinpath(OUT_DIR, "jr_chain.csv"))
 
-include(joinpath(AUX_DIR, "plotting_fns.jl"))
-set_default_plot_size(30cm, 20cm)
-plotPaths(df2, obs=[Float64.(df.x1), [x0⁺[2]]],
-          obsTime=[Float64.(df.time), [0.0]], obsCoords=[1,2])
+#include(joinpath(AUX_DIR, "plotting_fns.jl"))
+#set_default_plot_size(30cm, 20cm)
+#plotPaths(df2, obs=[Float64.(df.x1), [x0⁺[2]]],
+#          obsTime=[Float64.(df.time), [0.0]], obsCoords=[1,2])
 
-plotChain(df3, coords=[1])
-plotChain(df3, coords=[2])
+#plotChain(df3, coords=[1])
+#plotChain(df3, coords=[2])

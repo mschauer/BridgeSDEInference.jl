@@ -25,7 +25,7 @@ display(P)
 x0 = ℝ{6}(0.08,18,15,-0.5,0,0)
 
 dt = 1/100000
-T = 5.0
+T = 100.0
 tt = 0.0:dt:T
 
 Random.seed!(4)
@@ -33,7 +33,7 @@ XX, _ = simulateSegment(ℝ{1}( 0.0), x0, P, tt)
 
 
 XX.yy
-num_obs = 10000
+num_obs = 100
 skip = div(length(tt), num_obs)
 Time = collect(tt)[1:skip:end]
 #observation x[2]- x[3]

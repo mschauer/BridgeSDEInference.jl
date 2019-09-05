@@ -111,7 +111,7 @@ start = time()
                                     #Val((false, false, true, false)),
                                     #Val((false, false, false, true)),
                                     ),
-                         #paramUpdt=true,
+                         #paramUpdt=f,
                          paramUpdt=false,
                          updtType=(MetropolisHastingsUpdt(),
                                     #ConjugateUpdt(),

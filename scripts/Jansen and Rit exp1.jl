@@ -47,8 +47,8 @@ L = @SMatrix [0. 1. -1. 0. 0. 0.]
 Ls = [L for _ in P̃]
 Σs = [Σ for _ in P̃]
 τ(t₀,T) = (x) ->  t₀ + (x-t₀) * (2-(x-t₀)/(T-t₀))
-numSteps=1*10^3
-saveIter=3*10^2
+numSteps=1*10^2
+saveIter=3*10^1
 
 # ordered vectors A, a, B, b, C, νmax, v0, r, μx, μy, μz, σy
 ## For σ_y (positive), μ_y, C (positive), b (positive)
@@ -90,7 +90,7 @@ changePt = NoChangePt()
 x0 = ℝ{6}(0.08, 18, 15, -0.5, 0, 0)
 x0Pr = KnownStartingPt(x0)
 
-warmUp = 100
+warmUp = 10
 Random.seed!(4)
 start = time()
 
@@ -100,7 +100,7 @@ start = time()
                          P̃, Ls, Σs, numSteps, tKernel, priors, τ;
                          fpt=fpt,
                          ρ=0.975,
-                         dt=1/1000,
+                         dt=1/10000,
                          saveIter=saveIter,
                          verbIter=10^2,
                          #TOCHANGE
@@ -111,8 +111,8 @@ start = time()
                                     #Val((false, false, true, false)),
                                     #Val((false, false, false, true)),
                                     ),
-                         #paramUpdt=f,
-                         paramUpdt=false,
+                         paramUpdt=true,
+                         #paramUpdt=false,
                          updtType=(MetropolisHastingsUpdt(),
                                     #ConjugateUpdt(),
                                     #MetropolisHastingsUpdt(),
@@ -127,8 +127,8 @@ start = time()
 elapsed = time() - start
 print("time elapsed: ", elapsed, "\n")
 
-#print("imputation acceptance rate: ", accRateImp,
-#      ", parameter update acceptance rate: ", accRateUpdt)
+print("imputation acceptance rate: ", accRateImp,
+      ", parameter update acceptance rate: ", accRateUpdt)
 
 #x0⁺, pathsToSave = transformMCMCOutput(x0, paths, saveIter; chain=chain,
 #                                       numGibbsSteps=2,
